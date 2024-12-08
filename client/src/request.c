@@ -72,8 +72,8 @@ cJSON *form_create_chat_with(const char *userlogin) {
 
     unsigned char hash_login[SHA256_DIGEST_LENGTH];
     SHA256((const unsigned char *)userlogin, strlen(userlogin), hash_login);
-
     char *hash_login_b64 = base64_encode(hash_login, SHA256_DIGEST_LENGTH);
+    
     cJSON_AddStringToObject(json_payload, "userlogin", hash_login_b64);
 
     free(hash_login_b64);

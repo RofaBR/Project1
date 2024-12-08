@@ -1,6 +1,8 @@
 #include "../inc/server.h"
 
 char exe_path[PATH_MAX];
+t_client_node *client_list = NULL;
+pthread_mutex_t client_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void set_exe_path(void) {
     char full_path[PATH_MAX];
@@ -45,7 +47,6 @@ int start_server(t_server *server, const char *port) {
         free_server(server);
         return -1;
     }
-    syslog(LOG_INFO, "Socket created successfully");
 
     if (bind(server->sd, server->ai->ai_addr, server->ai->ai_addrlen) == -1) {
         if (errno == EADDRINUSE) {
@@ -56,7 +57,6 @@ int start_server(t_server *server, const char *port) {
         free_server(server);
         return -1;
     }
-    syslog(LOG_INFO, "Bind successful on port %s", port);
 
 
     if (listen(server->sd, 10) == -1) {
@@ -82,6 +82,7 @@ int start_server(t_server *server, const char *port) {
         }
         syslog(LOG_INFO, "New client connection accepted");
         t_client *client = create_new_client(socket_fd);
+        add_client_to_list(client);
 
         char addrstr[INET_ADDRSTRLEN];
         struct sockaddr_in *client_addr = (struct sockaddr_in *)&addr;
@@ -96,6 +97,7 @@ int start_server(t_server *server, const char *port) {
     }
 
     syslog(LOG_INFO, "Shutting down server");
+    closelog();
     free_server(server);
     return 0;
 }

@@ -64,17 +64,40 @@ bool db_group_update(t_group* group)
 }
 
 t_group* db_group_read_by_id(int id) {
-	char* where = NULL;
-	asprintf(&where, "groups.id = %d GROUP BY groups.id ORDER BY last_message DESC", id);
+    syslog(LOG_INFO, "db_group_read_by_id called with id: %d", id);
 
-	t_list* list = database_read("groups.id, groups.name, groups.is_private, groups.created_by, users.username, groups.created_at, max(messages.created_at) as last_message", "groups INNER JOIN users ON groups.created_by = users.id INNER JOIN messages ON groups.id = group_id", where);
-	t_group* ret = group_from_data_list(list);
+    char* where = NULL;
+    if (asprintf(&where, "groups.id = %d GROUP BY groups.id ORDER BY last_message DESC", id) == -1) {
+        syslog(LOG_ERR, "Failed to allocate memory for SQL where clause.");
+        return NULL;
+    }
 
-	mx_del_list(list, mx_list_size(list));
+    t_list* list = database_read(
+        "groups.id, groups.name, groups.is_private, groups.created_by, users.username, groups.created_at, max(messages.created_at) as last_message",
+        "groups INNER JOIN users ON groups.created_by = users.id LEFT JOIN messages ON groups.id = group_id",
+        where
+    );
+	syslog(LOG_INFO, "ABOBA");
+    if (!list) {
+        syslog(LOG_ERR, "Database read operation failed for id: %d", id);
+        mx_strdel(&where);
+        return NULL;
+    }
 
-	mx_strdel(&where);
+    t_group* ret = group_from_data_list(list);
 
-	return ret;
+    if (!ret) {
+        syslog(LOG_WARNING, "No group data found for id: %d", id);
+    } else {
+        syslog(LOG_INFO, "Successfully retrieved group data for id: %d", id);
+    }
+
+    mx_del_list(list, mx_list_size(list));
+    mx_strdel(&where);
+
+    syslog(LOG_INFO, "db_group_read_by_id completed for id: %d", id);
+
+    return ret;
 }
 
 t_list* db_group_read_all(void) {

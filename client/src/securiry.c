@@ -16,23 +16,23 @@ int generate_aes_key_iv(t_main *main) {
         return -1;
     }
 
-    printf("AES key and IV generated successfully.\n");
+    //printf("AES key and IV generated successfully.\n");
     return 0;
 }
 
 //test func
-static void print_aes_key_hash(const unsigned char *aes_key, size_t length) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256(aes_key, length, hash);
+// static void print_aes_key_hash(const unsigned char *aes_key, size_t length) {
+//     unsigned char hash[SHA256_DIGEST_LENGTH];
+//     SHA256(aes_key, length, hash);
 
-    char hex_hash[SHA256_DIGEST_LENGTH * 2 + 1];
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        sprintf(hex_hash + i * 2, "%02x", hash[i]);
-    }
-    hex_hash[SHA256_DIGEST_LENGTH * 2] = '\0';
+//     char hex_hash[SHA256_DIGEST_LENGTH * 2 + 1];
+//     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+//         sprintf(hex_hash + i * 2, "%02x", hash[i]);
+//     }
+//     hex_hash[SHA256_DIGEST_LENGTH * 2] = '\0';
 
-    printf("Computed SHA-256 hash of AES key: %s\n", hex_hash);
-}
+//     printf("Computed SHA-256 hash of AES key: %s\n", hex_hash);
+// }
 
 
 int handshake(t_main *main) {
@@ -51,7 +51,7 @@ int handshake(t_main *main) {
         return -1;
     }
     // use func for testing
-    print_aes_key_hash(main->keys.aes_key, AES_KEY_SIZE);
+    //print_aes_key_hash(main->keys.aes_key, AES_KEY_SIZE);
    //test_base64_encoding(main);
     if (mx_transfer_aes_key(main) != 0) {
         fprintf(stderr, "Failed to transfer AES keys to the server\n");
@@ -124,7 +124,7 @@ int mx_receiving_pubkey(t_main *main) {
     }
 
     BIO_free(bio);
-    printf("Public key received and parsed successfully.\n");
+    //printf("Public key received and parsed successfully.\n");
     return 0;
 }
 

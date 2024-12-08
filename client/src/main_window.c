@@ -1,5 +1,23 @@
 #include "../inc/bee_user.h"
 
+gboolean check_connection(gpointer user_data) {
+    t_main *main_data = (t_main *)user_data;
+    g_print("proverka\n");
+    if (!main_data->is_connected) {
+        g_print("is closing\n");
+        GtkWidget *main_window = g_object_get_data(G_OBJECT(main_data->buff), "main-window");
+        if (main_window) {
+            gtk_widget_destroy(main_window);
+        }
+
+        login_window(main_data->app, main_data);
+
+        return G_SOURCE_REMOVE;
+    }
+
+    return G_SOURCE_CONTINUE;
+}
+
 gboolean gtk_create_main_window(gpointer user_data) {
     (void)user_data;
     GtkWidget *main_window;
@@ -126,6 +144,11 @@ gboolean gtk_create_main_window(gpointer user_data) {
     gtk_widget_set_name(send_button, "send-button");
     gtk_widget_set_margin_start(send_button, 50);
 
+    /* Сохранение указателя на главное окно */
+    g_object_set_data(G_OBJECT(main_data->buff), "main-window", main_window);
+
+    // Запуск проверки соединения каждые 1000 мс
+    g_timeout_add(1000, check_connection, main_data);
 
     /* Отображение всех виджетов */
     gtk_widget_show_all(main_window);

@@ -22,14 +22,11 @@ void process_request(t_packet *receive_data, t_client *client) {
     syslog(LOG_INFO, "Processing request of type: %s", request_type->valuestring);
 
     if (strcmp(request_type->valuestring, "login") == 0) {
-        syslog(LOG_INFO, "Handling 'login' request");
         handle_login_request(json_payload, client);
     } else if (strcmp(request_type->valuestring, "registration") == 0) {
-        syslog(LOG_INFO, "Handling 'registration' request");
         handle_register_request(json_payload, client);
     } else if (strcmp(request_type->valuestring, "privateChatCreate") == 0) {
-        syslog(LOG_INFO, "Handling 'create chat' request");
-        
+        handle_group_create_request(json_payload, client);
     }
 
     cJSON_Delete(json_payload);

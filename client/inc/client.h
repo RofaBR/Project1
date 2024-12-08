@@ -42,8 +42,6 @@ typedef struct s_main {
 	int port;
 	bool is_connected;
 	bool is_closing;
-	pthread_mutex_t lock;
-	pthread_cond_t cond;
 	t_keys keys;
 
 	GtkApplication *app;
@@ -128,7 +126,7 @@ void test_base64_encoding(t_main *main_data);
 void update_error_label(GtkWidget *error_label, const char *message);
 gboolean gtk_update_notification_label(gpointer user_data);
 gboolean gtk_destroy_login_window(gpointer data);
-
+gboolean check_connection(gpointer user_data);
 
 gboolean gtk_create_main_window(gpointer user_data);
 void on_button_create_chat_clicked(GtkButton *button, gpointer user_data);

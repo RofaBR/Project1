@@ -26,6 +26,7 @@ void *handle_client(void *arg) {
     }
 
     syslog(LOG_INFO, "Client ID: %ld disconnected", client->thread_id);
+    remove_client_from_list(client);
     free_client(client);
 
     pthread_exit(NULL);

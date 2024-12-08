@@ -37,7 +37,7 @@ int generate_rsa_keys(t_keys *keys) {
         return -1;
     }
 
-    syslog(LOG_INFO, "RSA keys successfully generated and stored in t_keys");
+    //syslog(LOG_INFO, "RSA keys successfully generated and stored in t_keys");
     EVP_PKEY_CTX_free(ctx);
     return 0;
 }
@@ -289,7 +289,7 @@ int mx_receive_aes(t_client *client, unsigned char *encrypted_aes_key, size_t *e
     memcpy(iv, decoded_iv, AES_IV_SIZE);
     free(decoded_iv);
 
-    syslog(LOG_INFO, "Successfully received encrypted AES key and IV from Client id: %ld", client->thread_id);
+    //syslog(LOG_INFO, "Successfully received encrypted AES key and IV from Client id: %ld", client->thread_id);
     cJSON_Delete(json_payload);
     return 0;
 }

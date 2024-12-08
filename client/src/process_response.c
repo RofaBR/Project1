@@ -15,12 +15,15 @@ void process_response(t_packet *recieved_data) {
         return;
     }
 
+    printf("Processing respond of type: %s\n", response_type->valuestring);
+
     if (strcmp(response_type->valuestring, "login") == 0) {
-        printf("A 'login' type response was received\n");
         handle_login_response(json_payload);
     } else if (strcmp (response_type->valuestring, "register") == 0) {
-        printf("A 'register' type response was received\n");
         handle_register_response(json_payload);
+    } else if (strcmp (response_type->valuestring, "create_group") == 0){
+        printf("yep i got it\n");
+        printf("linux xyeta\n");
     }
 
     cJSON_Delete(json_payload);

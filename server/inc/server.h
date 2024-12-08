@@ -27,13 +27,19 @@
 
 extern char exe_path[PATH_MAX];
 
+typedef struct s_keys t_keys;
+typedef struct s_packet t_packet;
+typedef struct s_client t_client;
+typedef struct s_server t_server;
+typedef struct s_client_node t_client_node;
+
 typedef struct s_keys {
 	EVP_PKEY *pkey;
 	unsigned char aes_key[AES_KEY_SIZE];
 	unsigned char aes_iv[AES_IV_SIZE];
 }				t_keys;
 
-typedef struct t_packet{
+typedef struct s_packet{
 	size_t len;
 	char *data;
 }				t_packet;
@@ -50,6 +56,14 @@ typedef struct s_server {
 	bool is_running;
 	struct addrinfo *ai;
 }			  t_server;
+
+typedef struct s_client_node {
+    t_client *client;
+    struct s_client_node *next;
+} 				t_client_node;
+
+extern t_client_node *client_list;
+extern pthread_mutex_t client_list_mutex;
 
 //models
 typedef struct s_user {
@@ -174,10 +188,12 @@ int start_server(t_server *server, const char *port);
 void *handle_client(void *arg);
 void handle_login_request(cJSON* json_payload, t_client *client);
 void handle_register_request(cJSON *json_payload, t_client *client);
+void handle_group_create_request(cJSON* json_payload, t_client* client);
 t_client *create_new_client(int socket_fd);
 void free_client(t_client *client);
 void process_request(t_packet *receive_data, t_client *client);
-
+void add_client_to_list(t_client *client);
+void remove_client_from_list(t_client *client);
 
 //security func
 unsigned char *encrypt_json_with_aes(const unsigned char *aes_key, const unsigned char *iv, 
@@ -201,6 +217,7 @@ t_packet *create_packet(const char *data, size_t data_len);
 void free_packet(t_packet *receive);
 void send_message(t_packet *req, int socket);
 void prepare_and_send_json(cJSON *json_payload, t_client *client);
+void send_to_client_by_id(cJSON *json_payload, int receiver_user_id);
 
 t_server *create_server(void);
 void free_server(t_server *server);

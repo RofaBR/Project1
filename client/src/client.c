@@ -8,6 +8,7 @@ static void *connection(void *arg) {
     while (!main->is_closing) {
         main->socket = mx_connect_to_server(main);
         if (main->socket == -1) {
+            main->is_connected = false;
             printf("Failed to connect to server. Retrying in %d seconds...\n", main->rec_delay);
             sleep(main->rec_delay);
             continue;
@@ -36,13 +37,6 @@ static void *connection(void *arg) {
             process_response(received_data);
 
             free_message(received_data);
-            
-            // pthread_mutex_lock(&main->lock);
-            // cJSON_Delete(main->server_response);
-            // main->server_response = json_response;
-            // main->has_new_data = true;
-            // pthread_cond_signal(&main->cond);
-            // pthread_mutex_unlock(&main->lock);
         }
 
         close(main->socket);

@@ -109,7 +109,11 @@ void free_group_list(t_list* list)
 }
 
 cJSON *group_to_json(t_group* group) {
-	if(!group) return NULL;
+	if(!group) {
+		syslog(LOG_INFO, "hihi haha");
+		return NULL;
+	} 
+	
 	cJSON* json = cJSON_CreateObject();
 	
 	if(!json) return NULL;

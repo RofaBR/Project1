@@ -151,3 +151,110 @@ void handle_register_request(cJSON *json_payload, t_client *client) {
     free(decoded_username);
     free(decoded_password);
 }
+
+void handle_group_create_request(cJSON* json_payload, t_client* client) {
+    if (!json_payload) {
+        syslog(LOG_ERR, "Invalid JSON payload in handle_group_create_request");
+        return;
+    }
+    syslog(LOG_INFO, "DA ya tyt");
+    
+    cJSON* login_item = cJSON_GetObjectItemCaseSensitive(json_payload, "userlogin");
+
+    if (!cJSON_IsString(login_item) || !login_item->valuestring) {
+        syslog(LOG_ERR, "Missing or invalid fields in create group request");
+        return;
+    }
+
+    size_t decoded_len;
+    unsigned char* decoded_login = base64_decode(login_item->valuestring, &decoded_len);
+
+    if (!decoded_login) {
+        syslog(LOG_ERR, "Failed to decode Base64 fields in create group request");
+        free(decoded_login);
+        return;
+    }
+
+    char login[SHA256_DIGEST_LENGTH * 2 + 1];
+
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(&login[i * 2], "%02x", decoded_login[i]);
+    }
+    login[SHA256_DIGEST_LENGTH * 2] = '\0';
+
+    free(decoded_login);
+
+    cJSON* json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "response_type", "create_group");
+
+    t_user* user = db_user_read_by_login(login);
+
+    if (!user) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "User not found.");
+        syslog(LOG_INFO, "User not found.");
+    }
+    else {
+        if (user->id == client->id_db) {
+            cJSON_AddBoolToObject(json, "status", false);
+            cJSON_AddStringToObject(json, "data", "Why text yourself? That's called thoughts!");
+            syslog(LOG_INFO, "Why text yourself? That's called thoughts!");
+        }
+        else {
+            t_group* group = group_create("", client->id_db, 1);
+
+            int group_id = db_group_create(group);
+
+            if (group_id < 0) {
+                cJSON_AddBoolToObject(json, "status", false);
+                cJSON_AddStringToObject(json, "data", "Couldn't create chat.");
+                syslog(LOG_INFO, "Couldn't create chat.");
+            }
+            else {
+                if (db_user_add_to_group(client->id_db, group_id) < 0 || db_user_add_to_group(user->id, group_id) < 0) {
+                    cJSON_AddBoolToObject(json, "status", false);
+                    cJSON_AddStringToObject(json, "data", "Error creating chat.");
+                    syslog(LOG_INFO, "Error creating chat.");
+                    db_group_delete_by_id(group_id);
+                }
+                else {
+                    free_group(&group);
+                    group = db_group_read_by_id(group_id);
+
+                    cJSON* json_group = group_to_json(group);
+                    if (!json_group) {
+                        cJSON_AddBoolToObject(json, "status", false);
+                        cJSON_AddStringToObject(json, "data", "Server error.");
+                        syslog(LOG_INFO, "Server error.");
+                    }
+                    else {
+                        cJSON_AddBoolToObject(json, "status", true);
+                        cJSON_AddItemToObject(json, "data", json_group);
+
+                        // SEND TO SENDER AND RECIPIENT
+                        syslog(LOG_INFO, "otpravka do sendera");
+                        send_to_client_by_id(json_group, client->id_db);
+                        syslog(LOG_INFO, "otpravka do recivera");
+                        send_to_client_by_id(json_group, user->id);
+
+                        free_group(&group);
+                        free_user(&user);
+
+                        syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);
+                        return;
+                    }
+                }
+            }
+            free_group(&group);
+        }
+
+        free_user(&user);
+    }
+
+    syslog(LOG_INFO, "skill issue");
+    prepare_and_send_json(json, client);
+
+    syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);
+}
+
+

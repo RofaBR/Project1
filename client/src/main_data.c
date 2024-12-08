@@ -21,12 +21,12 @@ t_main *mx_create_main_data(GtkApplication *app, const char *address, int port) 
     main->app = app;
     main->buff = gtk_text_buffer_new(NULL);
     
-    if (pthread_mutex_init(&main->lock, NULL) != 0) {
-        perror("Mutex init failed");
-        free(main->address);
-        free(main);
-        return NULL;
-    }
+    // if (pthread_mutex_init(&main->lock, NULL) != 0) {
+    //     perror("Mutex init failed");
+    //     free(main->address);
+    //     free(main);
+    //     return NULL;
+    // }
     return main;
 }
 
@@ -41,6 +41,6 @@ void mx_free_main_data(t_main *main) {
         main->keys.pkey = NULL;
     }
 
-    pthread_mutex_destroy(&main->lock);
+    //pthread_mutex_destroy(&main->lock);
     free(main);
 }

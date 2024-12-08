@@ -74,16 +74,49 @@ void prepare_and_send_json(cJSON *json_payload, t_client *client) {
         cJSON_Delete(json_payload);
         return;
     }
-
+    
     if (client->socket_fd > 0) {
         t_packet *message = create_packet((char *)encrypted_data, encrypted_data_len);
         if (message) {
             send_message(message, client->socket_fd);
+            syslog(LOG_INFO, "otpravil");
             free_packet(message);
         }
     }
 
     cJSON_Delete(json_payload);
     free(encrypted_data);
+}
+
+void send_to_client_by_id(cJSON *json_payload, int receiver_user_id) {
+    if (!json_payload) {
+        syslog(LOG_ERR, "Invalid JSON payload in send_to_client_by_id");
+        return;
+    }
+
+    cJSON *json_copy = cJSON_Duplicate(json_payload, 1);
+
+    pthread_mutex_lock(&client_list_mutex);
+
+    t_client_node *current = client_list;
+    t_client *receiver_client = NULL;
+    while (current) {
+        t_client *client = current->client;
+        if (client->id_db == receiver_user_id) {
+            receiver_client = client;
+            break;
+        }
+        current = current->next;
+    }
+
+    pthread_mutex_unlock(&client_list_mutex);
+
+    if (!receiver_client) {
+        syslog(LOG_ERR, "Receiver user ID %d not found in client list", receiver_user_id);
+        cJSON_Delete(json_copy);
+        return;
+    }
+    
+    prepare_and_send_json(json_copy, receiver_client);
 }
 

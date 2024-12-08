@@ -57,6 +57,7 @@ typedef struct s_user {
 
 
 extern t_main *main_data;
+extern const char* uses_chat;
 
 //func to communicate with the server
 int mx_connect_to_server(t_main *main);

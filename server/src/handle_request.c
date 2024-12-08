@@ -170,7 +170,6 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
 
     if (!decoded_login) {
         syslog(LOG_ERR, "Failed to decode Base64 fields in create group request");
-        free(decoded_login);
         return;
     }
 
@@ -192,14 +191,12 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
         cJSON_AddBoolToObject(json, "status", false);
         cJSON_AddStringToObject(json, "data", "User not found.");
         syslog(LOG_INFO, "User not found.");
-    }
-    else {
+    } else {
         if (user->id == client->id_db) {
             cJSON_AddBoolToObject(json, "status", false);
             cJSON_AddStringToObject(json, "data", "Why text yourself? That's called thoughts!");
             syslog(LOG_INFO, "Why text yourself? That's called thoughts!");
-        }
-        else {
+        } else {
             t_group* group = group_create("", client->id_db, 1);
 
             int group_id = db_group_create(group);
@@ -208,15 +205,13 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                 cJSON_AddBoolToObject(json, "status", false);
                 cJSON_AddStringToObject(json, "data", "Couldn't create chat.");
                 syslog(LOG_INFO, "Couldn't create chat.");
-            }
-            else {
+            } else {
                 if (db_user_add_to_group(client->id_db, group_id) < 0 || db_user_add_to_group(user->id, group_id) < 0) {
                     cJSON_AddBoolToObject(json, "status", false);
                     cJSON_AddStringToObject(json, "data", "Error creating chat.");
                     syslog(LOG_INFO, "Error creating chat.");
                     db_group_delete_by_id(group_id);
-                }
-                else {
+                } else {
                     free_group(&group);
                     group = db_group_read_by_id(group_id);
 
@@ -228,20 +223,16 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                         cJSON_AddBoolToObject(json, "status", false);
                         cJSON_AddStringToObject(json, "data", "Server error.");
                         syslog(LOG_INFO, "Server error.");
-                    }
-                    else {
-                        cJSON* json_copy = cJSON_Duplicate(json, 1);
-
-                        cJSON_AddBoolToObject(json_copy, "status", true);
-                        cJSON_AddItemToObject(json_copy, "data", json_group);
+                    } else {
+                        cJSON_AddBoolToObject(json, "status", true);
+                        cJSON_AddItemToObject(json, "data", json_group);
 
                         // SEND TO SENDER AND RECIPIENT
 
                         syslog(LOG_INFO, "otpravka do recivera");
-                        send_to_client_by_id(json_copy, user->id);
+                        send_to_client_by_id(json, user->id);
 
-                        cJSON_Delete(json_group);
-                        cJSON_Delete(json_copy);
+                        cJSON_DeleteItemFromObject(json, "data");
 
                         group->name = user->username;
                         json_group = group_to_json(group);
@@ -250,8 +241,7 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                             cJSON_AddBoolToObject(json, "status", false);
                             cJSON_AddStringToObject(json, "data", "Server error.");
                             syslog(LOG_INFO, "Server error.");
-                        }
-                        else {
+                        } else {
                             cJSON_AddBoolToObject(json, "status", true);
                             cJSON_AddItemToObject(json, "data", json_group);
 

@@ -147,3 +147,8 @@ void handle_register_response(cJSON *json_payload) {
         g_idle_add(gtk_update_notification_label, GINT_TO_POINTER(0));
     }
 }
+/*
+void handle_create_chat_response(cJSON *json_payload) {
+
+}
+*/

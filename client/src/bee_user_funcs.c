@@ -40,3 +40,10 @@ void free_bee_user(t_bee_user *user) {
     free(user);
 }
 
+t_bee_group *create_bee_group_from_json(cJSON *data) {
+    if (!data || !cJSON_IsObject(data)) {
+        fprintf(stderr, "Invalid JSON object for user data\n");
+        return NULL;
+    }
+}
+

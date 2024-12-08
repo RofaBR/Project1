@@ -11,15 +11,15 @@ typedef struct s_bee_user {
     char  *created_at;
 }              t_bee_user;
 
-/*
-typedef struct s_bee_message {
-	int id;
-	int sent_by;
-	char* sender_username;
-	char* text;
-	int group_id;
-	char* created_at;
-}               t_bee_message;
+
+// typedef struct s_bee_message {
+// 	int id;
+// 	int sent_by;
+// 	char* sender_username;
+// 	char* text;
+// 	int group_id;
+// 	char* created_at;
+// }               t_bee_message;
 
 typedef struct s_bee_group {
 	int id;
@@ -29,9 +29,8 @@ typedef struct s_bee_group {
 	char* creator_username;
 	char* created_at;
 	char* last_message_date;
-    GtkWidget *chat_box;
 }               t_bee_group;
-*/
+
 
 t_bee_user *create_bee_user_from_json(cJSON *data);
 void free_bee_user(t_bee_user *user);

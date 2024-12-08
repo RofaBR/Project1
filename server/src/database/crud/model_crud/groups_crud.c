@@ -77,7 +77,7 @@ t_group* db_group_read_by_id(int id) {
         "groups INNER JOIN users ON groups.created_by = users.id LEFT JOIN messages ON groups.id = group_id",
         where
     );
-	syslog(LOG_INFO, "ABOBA");
+	
     if (!list) {
         syslog(LOG_ERR, "Database read operation failed for id: %d", id);
         mx_strdel(&where);

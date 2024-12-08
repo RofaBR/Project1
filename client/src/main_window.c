@@ -2,9 +2,7 @@
 
 gboolean check_connection(gpointer user_data) {
     t_main *main_data = (t_main *)user_data;
-    g_print("proverka\n");
     if (!main_data->is_connected) {
-        g_print("is closing\n");
         GtkWidget *main_window = g_object_get_data(G_OBJECT(main_data->buff), "main-window");
         if (main_window) {
             gtk_widget_destroy(main_window);

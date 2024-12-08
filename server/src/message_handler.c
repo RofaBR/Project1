@@ -79,7 +79,6 @@ void prepare_and_send_json(cJSON *json_payload, t_client *client) {
         t_packet *message = create_packet((char *)encrypted_data, encrypted_data_len);
         if (message) {
             send_message(message, client->socket_fd);
-            syslog(LOG_INFO, "otpravil");
             free_packet(message);
         }
     }

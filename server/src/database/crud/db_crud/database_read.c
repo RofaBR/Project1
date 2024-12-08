@@ -29,8 +29,9 @@ t_list *database_read(const char* select, const char* from, const char* where) {
     else {
         asprintf(&command, "SELECT %s FROM %s WHERE %s", select, from, where);
     }
+
     rc = sqlite3_exec(db, command, callback, &res, &error);
-    
+
     if(!validate_database_operation(rc, db, error)) return NULL;
 
     mx_strdel(&command);

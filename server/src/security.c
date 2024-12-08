@@ -120,7 +120,7 @@ int handshake(t_client *client) {
 
     memcpy(client->keys.aes_key, decrypted_key, AES_KEY_SIZE);
     //use func for testing
-    log_aes_key_hash_to_syslog(client->keys.aes_key, AES_KEY_SIZE);
+    //log_aes_key_hash_to_syslog(client->keys.aes_key, AES_KEY_SIZE);
     memcpy(client->keys.aes_iv, iv, AES_IV_SIZE);
     free(decrypted_key);
 

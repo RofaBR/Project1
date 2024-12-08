@@ -157,7 +157,6 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
         syslog(LOG_ERR, "Invalid JSON payload in handle_group_create_request");
         return;
     }
-    syslog(LOG_INFO, "DA ya tyt");
     
     cJSON* login_item = cJSON_GetObjectItemCaseSensitive(json_payload, "userlogin");
 
@@ -220,7 +219,7 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                 else {
                     free_group(&group);
                     group = db_group_read_by_id(group_id);
-
+                    
                     cJSON* json_group = group_to_json(group);
                     if (!json_group) {
                         cJSON_AddBoolToObject(json, "status", false);
@@ -233,9 +232,9 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
 
                         // SEND TO SENDER AND RECIPIENT
                         syslog(LOG_INFO, "otpravka do sendera");
-                        send_to_client_by_id(json_group, client->id_db);
+                        send_to_client_by_id(json, client->id_db);
                         syslog(LOG_INFO, "otpravka do recivera");
-                        send_to_client_by_id(json_group, user->id);
+                        send_to_client_by_id(json, user->id);
 
                         free_group(&group);
                         free_user(&user);

@@ -110,7 +110,6 @@ void free_group_list(t_list* list)
 
 cJSON *group_to_json(t_group* group) {
 	if(!group) {
-		syslog(LOG_INFO, "hihi haha");
 		return NULL;
 	} 
 	

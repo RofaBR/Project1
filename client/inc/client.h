@@ -23,6 +23,8 @@
 #define AES_KEY_SIZE 32
 #define AES_IV_SIZE 16 
 
+typedef struct s_bee_group t_bee_group;
+
 typedef struct s_keys {
 	EVP_PKEY *pkey;
 	unsigned char aes_key[AES_KEY_SIZE];
@@ -47,6 +49,7 @@ typedef struct s_main {
 	GtkApplication *app;
 	GtkTextBuffer *buff;
 
+	GList *groups;
 }				t_main;
 
 typedef struct s_user {
@@ -81,6 +84,8 @@ void login_window(GtkApplication *app, gpointer user_data);
 //main data func
 t_main *mx_create_main_data(GtkApplication *app, const char *address, int port);
 void mx_free_main_data(t_main *main);
+void mx_add_group(t_main *main, t_bee_group *group);
+void mx_free_group(t_bee_group *group);
 
 //func json request
 cJSON *form_login_request(const char *login, const char *password);
@@ -117,11 +122,9 @@ void restore_login_form(GtkWidget *button, gpointer data);
 //response handler funcs
 void handle_login_response(cJSON *json_payload);
 void handle_register_response(cJSON *json_payload);
+void handle_create_chat_response(cJSON *json_payload);
 
 //test func
-t_user *mx_create_client(void);
-void mx_print_client(const t_user *client);
-void mx_free_client(t_user *client);
 void test_base64_encoding(t_main *main_data);
 
 void update_error_label(GtkWidget *error_label, const char *message);
@@ -131,6 +134,10 @@ gboolean check_connection(gpointer user_data);
 
 gboolean gtk_create_main_window(gpointer user_data);
 void on_button_create_chat_clicked(GtkButton *button, gpointer user_data);
+void on_chat_button_clicked(GtkButton *button, gpointer user_data);
 void on_private_chat_clicked(GtkButton *button, gpointer user_data);
+
+void render_chat(t_bee_group *group, GtkWidget *sidebar_box);
+void render_all_chats(t_main *main_data, GtkWidget *sidebar_box);
 
 #endif

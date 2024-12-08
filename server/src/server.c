@@ -97,7 +97,6 @@ int start_server(t_server *server, const char *port) {
     }
 
     syslog(LOG_INFO, "Shutting down server");
-    closelog();
     free_server(server);
     return 0;
 }

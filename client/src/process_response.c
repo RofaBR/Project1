@@ -22,8 +22,7 @@ void process_response(t_packet *recieved_data) {
     } else if (strcmp (response_type->valuestring, "register") == 0) {
         handle_register_response(json_payload);
     } else if (strcmp (response_type->valuestring, "create_group") == 0){
-        printf("yep i got it\n");
-        printf("linux xyeta\n");
+        handle_create_chat_response(json_payload);
     }
 
     cJSON_Delete(json_payload);

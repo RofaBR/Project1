@@ -32,7 +32,11 @@ typedef struct s_bee_group {
 }               t_bee_group;
 
 
-t_bee_user *create_bee_user_from_json(cJSON *data);
+t_bee_user *create_bee_user(const char *login, const char *username, const char *created_at, int logo_id);
 void free_bee_user(t_bee_user *user);
+
+t_bee_group *create_bee_group(int id, const char *name, int is_private, int created_by, const char *creator_username, const char *created_at, const char *last_message_date);
+void free_bee_group(t_bee_group *group);
+
 
 #endif

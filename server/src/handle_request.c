@@ -248,9 +248,7 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                             syslog(LOG_INFO, "otpravka do sendera");
                             send_to_client_by_id(json, client->id_db);
 
-                            cJSON_Delete(json_group);
                             cJSON_Delete(json);
-
                             free_group(&group);
                             free_user(&user);
 

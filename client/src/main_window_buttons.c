@@ -1,5 +1,19 @@
 #include "../inc/bee_user.h"
 
+void on_chat_button_clicked(GtkButton *button, gpointer user_data) {
+    (void)button;
+    GtkWidget *chat_button = GTK_WIDGET(user_data);
+    const char *button_label = gtk_button_get_label(GTK_BUTTON(chat_button));
+    
+    if (uses_chat != NULL && strcmp(uses_chat, button_label) == 0) {
+        uses_chat = NULL;
+        g_print("Chat not selected\n");
+    } else {
+        uses_chat = button_label;
+        g_print("Chat label: %s\n", button_label);
+    }
+}
+
 void on_button_create_chat_clicked(GtkButton *button, gpointer user_data) {
     (void)button;
 
@@ -55,6 +69,13 @@ void on_private_chat_clicked(GtkButton *button, gpointer user_data) {
         cJSON *createChat_request = form_create_chat_with(username);
         prepare_and_send_json(createChat_request, main_data);
         // Добавьте здесь логику для создания чата
+        
+        GtkWidget *new_chat = gtk_button_new_with_label(username);
+        gtk_box_pack_start(GTK_BOX(main_box), new_chat, FALSE, FALSE, 5);
+        g_signal_connect(new_chat, "clicked", G_CALLBACK(on_chat_button_clicked), new_chat);
+        gtk_widget_set_name(new_chat, "button-new-chat");
+
+        gtk_widget_show_all(main_box);
     }
 
     gtk_widget_destroy(dialog);

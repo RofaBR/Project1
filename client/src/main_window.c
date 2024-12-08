@@ -1,5 +1,39 @@
 #include "../inc/bee_user.h"
 
+const char* uses_chat = NULL;
+
+void on_add_message_button_clicked(GtkWidget *button, gpointer user_data) {
+    (void)button;
+    GtkEntry *entry = GTK_ENTRY(user_data);
+    
+    if (uses_chat == NULL) {
+        mx_printerr("Chat not chosen\n");
+        gtk_entry_set_text(entry, "");
+
+        GtkWidget *dialog = gtk_dialog_new();
+        gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+        gtk_widget_set_name(dialog, "dialog-search-person");
+        gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(entry))));
+
+        GtkWidget *error = gtk_label_new("Chat not chosen");
+        gtk_widget_set_name(error, "error-label");
+
+        GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+        gtk_container_add(GTK_CONTAINER(content_area), error);
+        gtk_widget_show_all(dialog);
+        g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+    } else {
+        const char *message = gtk_entry_get_text(entry);
+        if (message == NULL || mx_strlen(message) == 0) {
+            mx_printerr("No message entered\n");
+            gtk_entry_set_text(entry, "");
+        } else {
+            printf("Text entered: %s\n", message);
+            gtk_entry_set_text(entry, "");
+        }
+    }
+}
+
 gboolean check_connection(gpointer user_data) {
     t_main *main_data = (t_main *)user_data;
     if (!main_data->is_connected) {
@@ -122,7 +156,7 @@ gboolean gtk_create_main_window(gpointer user_data) {
     gtk_widget_set_name(button_create_chat, "create-chat-button");
 
     // Подключаем обработчик для кнопки
-    g_signal_connect(button_create_chat, "clicked", G_CALLBACK(on_button_create_chat_clicked), main_box);
+    g_signal_connect(button_create_chat, "clicked", G_CALLBACK(on_button_create_chat_clicked), sidebar_box);
 
     /* Поле для ввода сообщений */
     chat_entry = gtk_entry_new();
@@ -141,6 +175,7 @@ gboolean gtk_create_main_window(gpointer user_data) {
     gtk_box_pack_start(GTK_BOX(chat_entry_box), send_button, FALSE, FALSE, 0);
     gtk_widget_set_name(send_button, "send-button");
     gtk_widget_set_margin_start(send_button, 50);
+    g_signal_connect(send_button, "clicked", G_CALLBACK(on_add_message_button_clicked), chat_entry);
 
     /* Сохранение указателя на главное окно */
     g_object_set_data(G_OBJECT(main_data->buff), "main-window", main_window);

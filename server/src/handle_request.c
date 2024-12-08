@@ -157,7 +157,7 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
         syslog(LOG_ERR, "Invalid JSON payload in handle_group_create_request");
         return;
     }
-    
+
     cJSON* login_item = cJSON_GetObjectItemCaseSensitive(json_payload, "userlogin");
 
     if (!cJSON_IsString(login_item) || !login_item->valuestring) {
@@ -219,7 +219,10 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                 else {
                     free_group(&group);
                     group = db_group_read_by_id(group_id);
-                    
+
+                    mx_strdel(&group->name);
+                    group->name = group->creator_username;
+
                     cJSON* json_group = group_to_json(group);
                     if (!json_group) {
                         cJSON_AddBoolToObject(json, "status", false);
@@ -227,20 +230,43 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                         syslog(LOG_INFO, "Server error.");
                     }
                     else {
-                        cJSON_AddBoolToObject(json, "status", true);
-                        cJSON_AddItemToObject(json, "data", json_group);
+                        cJSON* json_copy = cJSON_Duplicate(json, 1);
+
+                        cJSON_AddBoolToObject(json_copy, "status", true);
+                        cJSON_AddItemToObject(json_copy, "data", json_group);
 
                         // SEND TO SENDER AND RECIPIENT
-                        syslog(LOG_INFO, "otpravka do sendera");
-                        send_to_client_by_id(json, client->id_db);
+
                         syslog(LOG_INFO, "otpravka do recivera");
-                        send_to_client_by_id(json, user->id);
+                        send_to_client_by_id(json_copy, user->id);
 
-                        free_group(&group);
-                        free_user(&user);
+                        cJSON_Delete(json_group);
+                        cJSON_Delete(json_copy);
 
-                        syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);
-                        return;
+                        group->name = user->username;
+                        json_group = group_to_json(group);
+
+                        if (!json_group) {
+                            cJSON_AddBoolToObject(json, "status", false);
+                            cJSON_AddStringToObject(json, "data", "Server error.");
+                            syslog(LOG_INFO, "Server error.");
+                        }
+                        else {
+                            cJSON_AddBoolToObject(json, "status", true);
+                            cJSON_AddItemToObject(json, "data", json_group);
+
+                            syslog(LOG_INFO, "otpravka do sendera");
+                            send_to_client_by_id(json, client->id_db);
+
+                            cJSON_Delete(json_group);
+                            cJSON_Delete(json);
+
+                            free_group(&group);
+                            free_user(&user);
+
+                            syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);
+                            return;
+                        }
                     }
                 }
             }
@@ -255,5 +281,3 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
 
     syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);
 }
-
-

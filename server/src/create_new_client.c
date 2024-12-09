@@ -32,7 +32,7 @@ void free_client(t_client *client) {
     if (!client) {
         return;
     }
-
+    syslog(LOG_INFO, "Freeing client resources: %p", (void *)client);
     if (client->socket_fd >= 0) {
         close(client->socket_fd);
     }

@@ -101,7 +101,7 @@ void send_to_client_by_id(cJSON *json_payload, int receiver_user_id) {
     t_client *receiver_client = NULL;
     while (current) {
         t_client *client = current->client;
-        if (client->id_db == receiver_user_id) {
+       if (client->id_db == receiver_user_id) {
             receiver_client = client;
             break;
         }

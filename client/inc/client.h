@@ -138,7 +138,7 @@ gboolean gtk_create_main_window(gpointer user_data);
 void on_button_create_chat_clicked(GtkButton *button, gpointer user_data);
 void on_chat_button_clicked(GtkButton *button, gpointer user_data);
 void on_private_chat_clicked(GtkButton *button, gpointer user_data);
-
+void on_exit_button_clicked(GtkButton *button, gpointer user_data);
 void render_chat(t_bee_group *group, GtkWidget *sidebar_box);
 void render_all_chats(t_main *main_data, GtkWidget *sidebar_box);
 

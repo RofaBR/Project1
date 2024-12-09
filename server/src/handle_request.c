@@ -153,6 +153,7 @@ void handle_register_request(cJSON *json_payload, t_client *client) {
 }
 
 void handle_group_create_request(cJSON* json_payload, t_client* client) {
+    syslog(LOG_INFO, "popav");
     if (!json_payload) {
         syslog(LOG_ERR, "Invalid JSON payload in handle_group_create_request");
         return;
@@ -196,7 +197,7 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
             cJSON_AddBoolToObject(json, "status", false);
             cJSON_AddStringToObject(json, "data", "Why text yourself? That's called thoughts!");
             syslog(LOG_INFO, "Why text yourself? That's called thoughts!");
-        } else if (db_private_group_exists(user->id), client->id_db) {
+        } else if (db_private_group_exists(user->id, client->id_db)) {
             cJSON_AddBoolToObject(json, "status", false);
             cJSON_AddStringToObject(json, "data", "You and this user are already chatting.");
             syslog(LOG_INFO, "You and this user are already chatting.");
@@ -231,10 +232,8 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                         cJSON_AddBoolToObject(json, "status", true);
                         cJSON_AddItemToObject(json, "data", json_group);
 
-                        // SEND TO SENDER AND RECIPIENT
-
                         syslog(LOG_INFO, "otpravka do recivera");
-                        send_to_client_by_id(json, user->id);
+                        //send_to_client_by_id(json, user->id);
 
                         cJSON_DeleteItemFromObject(json, "data");
 
@@ -250,7 +249,7 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
                             cJSON_AddItemToObject(json, "data", json_group);
 
                             syslog(LOG_INFO, "otpravka do sendera");
-                            send_to_client_by_id(json, client->id_db);
+                            //send_to_client_by_id(json, client->id_db);
 
                             cJSON_Delete(json);
                             free_group(&group);
@@ -268,7 +267,6 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
         free_user(&user);
     }
 
-    syslog(LOG_INFO, "skill issue");
     prepare_and_send_json(json, client);
 
     syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);

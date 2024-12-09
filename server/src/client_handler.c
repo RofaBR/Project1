@@ -24,7 +24,7 @@ void *handle_client(void *arg) {
         process_request(received_data, client);
         free_packet(received_data);
     }
-
+    
     syslog(LOG_INFO, "Client ID: %ld disconnected", client->thread_id);
     remove_client_from_list(client);
     free_client(client);

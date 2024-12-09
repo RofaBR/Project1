@@ -79,7 +79,6 @@
     padding: 5px;
 }
 
-/* Цвет боковой панели */
 .side-box {
     background-color: #e4b20d;
     border-right: 2px solid #000000;
@@ -87,9 +86,9 @@
 
 .message-area {
     background-image: url('img/back_of_page.svg');
-    background-size: cover; /* Масштабируем, чтобы покрыть всю область */
-    background-repeat: no-repeat; /* Избегаем повторения */
-    background-position: center; /*Центрируем изображение */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center; 
 }
 
 #create-chat-button {
@@ -202,3 +201,15 @@ button:hover {
     padding: 5px;
 }
 
+#exit-button {
+    background-color: transparent;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+}
+
+#exit-button:hover {
+    border-color: #d39506;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}

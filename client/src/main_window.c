@@ -67,9 +67,8 @@ gboolean gtk_create_main_window(gpointer user_data) {
 
     /* Верхняя панель чата */
     GtkWidget *topbar_box;
-    GtkWidget *avatar_image;
-    GdkPixbuf *pixbuf, *scaled_pixbuf;
-
+    GtkWidget *exit_button;
+    GtkWidget *exit_image;
     /* Поле ввода сообщений */
     GtkWidget *chat_entry_box;
    //GtkWidget *chat_entry;
@@ -112,16 +111,17 @@ gboolean gtk_create_main_window(gpointer user_data) {
     GtkStyleContext *sidebar_context = gtk_widget_get_style_context(sidebar_box);
     gtk_style_context_add_class(sidebar_context, "side-box"); // Добавляем класс для CSS
 
-    /* Добавление аватарки в боковую панель */
-    pixbuf = gdk_pixbuf_new_from_file("img/avatar.png", NULL);
-    scaled_pixbuf = gdk_pixbuf_scale_simple(pixbuf, 60, 60, GDK_INTERP_BILINEAR); // Масштабирование до 60x60
-    avatar_image = gtk_image_new_from_pixbuf(scaled_pixbuf);
-
-    g_object_unref(pixbuf); // Освобождаем память оригинального изображения
-    g_object_unref(scaled_pixbuf); // Освобождаем память масштабированного изображения
-
-    gtk_widget_set_halign(avatar_image, GTK_ALIGN_START); // Выравнивание по левому краю
-    gtk_box_pack_start(GTK_BOX(topbar_box), avatar_image, FALSE, FALSE, 0); // Добавление сверху
+    /* Кнопка выхода */
+    exit_button = gtk_button_new();
+    exit_image = create_image("img/exit_icon.png", 50, 50); // Создайте подходящую иконку для кнопки выхода
+    gtk_button_set_image(GTK_BUTTON(exit_button), exit_image);
+    gtk_widget_set_name(exit_button, "exit-button");
+    gtk_widget_set_halign(exit_button, GTK_ALIGN_END); // Выравнивание кнопки по правому краю
+    gtk_widget_set_valign(exit_button, GTK_ALIGN_CENTER); // Вертикальное выравнивание
+    gtk_box_pack_end(GTK_BOX(topbar_box), exit_button, FALSE, FALSE, 0);
+    gtk_widget_set_name(exit_button, "exit-button");
+    gtk_widget_set_size_request(exit_button, 45, 45);
+    g_signal_connect(exit_button, "clicked", G_CALLBACK(on_exit_button_clicked), main_window);
 
     /* Контейнер для чата */
     chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

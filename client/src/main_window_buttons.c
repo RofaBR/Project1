@@ -80,3 +80,9 @@ void on_private_chat_clicked(GtkButton *button, gpointer user_data) {
 
     gtk_widget_destroy(dialog);
 }
+
+void on_exit_button_clicked(GtkButton *button, gpointer user_data) {
+    (void)button;
+    GtkWidget *main_window = GTK_WIDGET(user_data);
+    gtk_widget_destroy(main_window);
+}

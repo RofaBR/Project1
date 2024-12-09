@@ -1,6 +1,7 @@
 #include "../inc/bee_user.h"
 
 const char* uses_chat = NULL;
+GtkWidget *chat_entry;
 
 void on_add_message_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
@@ -71,7 +72,7 @@ gboolean gtk_create_main_window(gpointer user_data) {
 
     /* Поле ввода сообщений */
     GtkWidget *chat_entry_box;
-    GtkWidget *chat_entry;
+   //GtkWidget *chat_entry;
 
     /* Контейнер для отображения сообщений */
     GtkWidget *message_area;

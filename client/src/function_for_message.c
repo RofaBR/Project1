@@ -1,5 +1,15 @@
 #include "../inc/bee_user.h"
 
+void on_emoji_selected(GtkButton *button, gpointer user_data) {
+    (void) user_data;  
+    const char *emoji = gtk_button_get_label(button);  
+    const char *current_text = gtk_entry_get_text(GTK_ENTRY(chat_entry));
+
+    gchar *new_text = g_strdup_printf("%s%s", current_text, emoji);
+    gtk_entry_set_text(GTK_ENTRY(chat_entry), new_text);
+    g_free(new_text);
+}
+
 void on_emoji_button_clicked(GtkButton *button, gpointer user_data) {
     (void)button; 
     GtkWidget *emoji_user_data = GTK_WIDGET(user_data);
@@ -31,6 +41,7 @@ void on_emoji_button_clicked(GtkButton *button, gpointer user_data) {
 
     for (int i = 0; i < num_emojis; i++) {
         GtkWidget *emoji_button = gtk_button_new_with_label(emojis[i]);
+        g_signal_connect(emoji_button, "clicked", G_CALLBACK(on_emoji_selected), NULL);
         gtk_grid_attach(GTK_GRID(emoji_grid), emoji_button, i % 5, i / 5, 1, 1);
     }
 

@@ -61,6 +61,7 @@ typedef struct s_user {
 
 extern t_main *main_data;
 extern const char* uses_chat;
+extern GtkWidget *chat_entry;
 
 
 //func to communicate with the server

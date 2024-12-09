@@ -130,6 +130,7 @@ gboolean gtk_create_main_window(gpointer user_data) {
 
    /* Контейнер для отображения сообщений (область истории чата) */
     GtkWidget *message_scrolled = gtk_scrolled_window_new(NULL, NULL);
+    message_scrolled = gtk_scrolled_window_new(NULL, NULL);
     gtk_widget_set_vexpand(message_scrolled, TRUE); // Позволяет растягиваться по вертикали
     gtk_widget_set_hexpand(message_scrolled, TRUE); // Позволяет растягиваться по горизонтали
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(message_scrolled),
@@ -157,6 +158,22 @@ gboolean gtk_create_main_window(gpointer user_data) {
 
     // Подключаем обработчик для кнопки
     g_signal_connect(button_create_chat, "clicked", G_CALLBACK(on_button_create_chat_clicked), sidebar_box);
+
+    // кнопка передачі фото
+    GtkWidget *file_button = gtk_button_new();
+    GtkWidget *image_load = create_image("img/uploadrofa.svg", 20, 15);
+    gtk_button_set_image(GTK_BUTTON(file_button), image_load);
+    gtk_box_pack_start(GTK_BOX(chat_entry_box), file_button, FALSE, FALSE, 0);
+    gtk_widget_set_name(file_button, "create-chat-button");
+    gtk_widget_set_margin_start(file_button, 30);
+    g_signal_connect(file_button, "clicked", G_CALLBACK(on_file_button_clicked), main_window);
+
+    // кнопка передачі смайликів
+    GtkWidget *emoji_button = gtk_button_new_with_label("😊");
+    gtk_box_pack_start(GTK_BOX(chat_entry_box), emoji_button, FALSE, FALSE, 0);
+    gtk_widget_set_name(emoji_button, "create-chat-button");
+    gtk_widget_set_margin_start(emoji_button, 10);
+    g_signal_connect(emoji_button, "clicked", G_CALLBACK(on_emoji_button_clicked), emoji_button);
 
     /* Поле для ввода сообщений */
     chat_entry = gtk_entry_new();

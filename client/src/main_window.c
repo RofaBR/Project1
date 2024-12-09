@@ -2,6 +2,9 @@
 
 const char* uses_chat = NULL;
 GtkWidget *chat_entry;
+GtkWidget *message_area;
+
+
 
 void on_add_message_button_clicked(GtkWidget *button, gpointer user_data) {
     (void)button;
@@ -30,6 +33,8 @@ void on_add_message_button_clicked(GtkWidget *button, gpointer user_data) {
             gtk_entry_set_text(entry, "");
         } else {
             printf("Text entered: %s\n", message);
+            add_message_to_chat(message, NULL);
+
             gtk_entry_set_text(entry, "");
         }
     }
@@ -74,7 +79,7 @@ gboolean gtk_create_main_window(gpointer user_data) {
    //GtkWidget *chat_entry;
 
     /* Контейнер для отображения сообщений */
-    GtkWidget *message_area;
+    //GtkWidget *message_area;
 
     /* Создание главного окна */
     main_window = gtk_application_window_new(GTK_APPLICATION(main_data->app));

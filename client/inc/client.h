@@ -62,6 +62,7 @@ typedef struct s_user {
 extern t_main *main_data;
 extern const char* uses_chat;
 extern GtkWidget *chat_entry;
+extern GtkWidget *message_area;
 
 
 //func to communicate with the server
@@ -145,4 +146,6 @@ void render_all_chats(t_main *main_data, GtkWidget *sidebar_box);
 //messange func
 void on_emoji_button_clicked(GtkButton *button, gpointer user_data);
 void on_file_button_clicked(GtkButton *button, gpointer user_data);
+void add_message_to_chat(const char *message, const char *file_path);
+void clear_message_area(void);
 #endif

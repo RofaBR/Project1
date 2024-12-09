@@ -8,6 +8,7 @@ void on_chat_button_clicked(GtkButton *button, gpointer user_data) {
     if (uses_chat != NULL && strcmp(uses_chat, button_label) == 0) {
         uses_chat = NULL;
         g_print("Chat not selected\n");
+        clear_message_area();
     } else {
         uses_chat = button_label;
         g_print("Chat label: %s\n", button_label);

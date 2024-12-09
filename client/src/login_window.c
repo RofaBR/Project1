@@ -48,7 +48,7 @@ void login_window(GtkApplication *app, gpointer user_data) {
     gtk_box_pack_start(GTK_BOX(vbox), error_label, FALSE, FALSE, 5);
     g_object_set_data(G_OBJECT(main_data->buff), "error-label", error_label);
 
-    login_button = gtk_button_new_with_label("Log In");
+    login_button = gtk_button_new_with_label("Enter Hive");
     gtk_widget_set_name(login_button, "login_button");
 
     g_object_set_data(G_OBJECT(login_button), "main_data", main_data);

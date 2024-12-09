@@ -1,7 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#define DB_NAME "test.db"
+#define DB_NAME "uchat.db"
 #define AES_KEY_SIZE 32
 #define AES_IV_SIZE 16 
 

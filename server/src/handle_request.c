@@ -153,14 +153,12 @@ void handle_register_request(cJSON *json_payload, t_client *client) {
 }
 
 void handle_group_create_request(cJSON* json_payload, t_client* client) {
-    syslog(LOG_INFO, "popav");
     if (!json_payload) {
         syslog(LOG_ERR, "Invalid JSON payload in handle_group_create_request");
         return;
     }
 
     cJSON* login_item = cJSON_GetObjectItemCaseSensitive(json_payload, "userlogin");
-
     if (!cJSON_IsString(login_item) || !login_item->valuestring) {
         syslog(LOG_ERR, "Missing or invalid fields in create group request");
         return;
@@ -175,99 +173,116 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
     }
 
     char login[SHA256_DIGEST_LENGTH * 2 + 1];
-
     for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        sprintf(&login[i * 2], "%02x", decoded_login[i]);
+        snprintf(&login[i * 2], 3, "%02x", decoded_login[i]);
     }
-    login[SHA256_DIGEST_LENGTH * 2] = '\0';
-
     free(decoded_login);
 
     cJSON* json = cJSON_CreateObject();
+    if (!json) {
+        syslog(LOG_ERR, "Failed to create JSON object");
+        return;
+    }
+
     cJSON_AddStringToObject(json, "response_type", "create_group");
 
     t_user* user = db_user_read_by_login(login);
-
     if (!user) {
         cJSON_AddBoolToObject(json, "status", false);
         cJSON_AddStringToObject(json, "data", "User not found.");
         syslog(LOG_INFO, "User not found.");
-    } else {
-        if (user->id == client->id_db) {
-            cJSON_AddBoolToObject(json, "status", false);
-            cJSON_AddStringToObject(json, "data", "Why text yourself? That's called thoughts!");
-            syslog(LOG_INFO, "Why text yourself? That's called thoughts!");
-        } else if (db_private_group_exists(user->id, client->id_db)) {
-            cJSON_AddBoolToObject(json, "status", false);
-            cJSON_AddStringToObject(json, "data", "You and this user are already chatting.");
-            syslog(LOG_INFO, "You and this user are already chatting.");
-        } else {
-            t_group* group = group_create("", client->id_db, 1);
-
-            int group_id = db_group_create(group);
-
-            if (group_id < 0) {
-                cJSON_AddBoolToObject(json, "status", false);
-                cJSON_AddStringToObject(json, "data", "Couldn't create chat.");
-                syslog(LOG_INFO, "Couldn't create chat.");
-            } else {
-                if (db_user_add_to_group(client->id_db, group_id) < 0 || db_user_add_to_group(user->id, group_id) < 0) {
-                    cJSON_AddBoolToObject(json, "status", false);
-                    cJSON_AddStringToObject(json, "data", "Error creating chat.");
-                    syslog(LOG_INFO, "Error creating chat.");
-                    db_group_delete_by_id(group_id);
-                } else {
-                    free_group(&group);
-                    group = db_group_read_by_id(group_id);
-
-                    mx_strdel(&group->name);
-                    group->name = group->creator_username;
-
-                    cJSON* json_group = group_to_json(group);
-                    if (!json_group) {
-                        cJSON_AddBoolToObject(json, "status", false);
-                        cJSON_AddStringToObject(json, "data", "Server error.");
-                        syslog(LOG_INFO, "Server error.");
-                    } else {
-                        cJSON_AddBoolToObject(json, "status", true);
-                        cJSON_AddItemToObject(json, "data", json_group);
-
-                        syslog(LOG_INFO, "otpravka do recivera");
-                        //send_to_client_by_id(json, user->id);
-
-                        cJSON_DeleteItemFromObject(json, "data");
-
-                        group->name = user->username;
-                        json_group = group_to_json(group);
-
-                        if (!json_group) {
-                            cJSON_AddBoolToObject(json, "status", false);
-                            cJSON_AddStringToObject(json, "data", "Server error.");
-                            syslog(LOG_INFO, "Server error.");
-                        } else {
-                            cJSON_AddBoolToObject(json, "status", true);
-                            cJSON_AddItemToObject(json, "data", json_group);
-
-                            syslog(LOG_INFO, "otpravka do sendera");
-                            //send_to_client_by_id(json, client->id_db);
-
-                            cJSON_Delete(json);
-                            free_group(&group);
-                            free_user(&user);
-
-                            syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);
-                            return;
-                        }
-                    }
-                }
-            }
-            free_group(&group);
-        }
-
-        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
     }
 
-    prepare_and_send_json(json, client);
+    if (user->id == client->id_db) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Why text yourself? That's called thoughts!");
+        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
+    }
 
-    syslog(LOG_INFO, "Create group request received. Decoded login: %s", login);
+    if (db_private_group_exists(user->id, client->id_db)) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "You and this user are already chatting.");
+        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
+    }
+
+    t_group* group = group_create("", client->id_db, 1);
+    if (!group) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Couldn't create chat.");
+        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
+    }
+
+    int group_id = db_group_create(group);
+    if (group_id < 0) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Couldn't create chat.");
+        free_group(&group);
+        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
+    }
+
+    if (db_user_add_to_group(client->id_db, group_id) < 0 || db_user_add_to_group(user->id, group_id) < 0) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Error creating chat.");
+        db_group_delete_by_id(group_id);
+        free_group(&group);
+        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
+    }
+
+    free_group(&group);
+    group = db_group_read_by_id(group_id);
+    if (!group) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Server error.");
+        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
+    }
+
+    mx_strdel(&group->name);
+    group->name = strdup(group->creator_username);
+
+    cJSON* json_group = group_to_json(group);
+    if (!json_group) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Server error.");
+        free_group(&group);
+        free_user(&user);
+        prepare_and_send_json(json, client);
+        return;
+    }
+
+    cJSON_AddBoolToObject(json, "status", true);
+    cJSON_AddItemToObject(json, "data", json_group);
+
+    send_to_client_by_id(json, user->id);
+
+    mx_strdel(&group->name);
+    group->name = strdup(user->username);
+
+    json_group = group_to_json(group);
+    if (!json_group) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Server error.");
+    } else {
+        cJSON_ReplaceItemInObject(json, "data", json_group);
+        send_to_client_by_id(json, client->id_db);
+    }
+
+    free_group(&group);
+    free_user(&user);
+    cJSON_Delete(json);
+    syslog(LOG_INFO, "Create group request processed successfully. Decoded login: %s", login);
 }
+

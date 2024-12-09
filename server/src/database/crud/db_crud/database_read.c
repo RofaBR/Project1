@@ -1,6 +1,7 @@
 #include "../../../../inc/server.h"
 
 static int callback(void* data, int argc, char** argv, char** azColName) {
+    (void)azColName;
     t_list** list = (t_list**)data;
     for (int i = 0; i < argc; i++) {
         if (mx_strlen(argv[i]) != 0) {

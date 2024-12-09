@@ -109,3 +109,26 @@ t_list* db_group_read_all(void) {
 
 	return ret;
 }
+
+bool db_private_group_exists(int idA, int idB) {
+	char* from = NULL;
+	char* where = NULL;
+	asprintf(&from, "groups INNER JOIN users_groups ON users_groups.group_id = groups.id INNER JOIN (SELECT group_id as gid FROM users_groups WHERE user_id = %d) as A ON users_groups.group_id = A.gid", idA);
+	asprintf(&where, "users_groups.user_id = %d AND groups.is_private = 1", idB);
+	t_list* list = database_read("users_groups.id", from, where);
+
+	mx_strdel(&from);
+	mx_strdel(&where);
+
+	if (!list) return false;
+
+	int size = mx_list_size(list);
+	t_list* current = list;
+	while (current) {
+		free(current->data);
+		current = current->next;
+	}
+	mx_del_list(list, size);
+
+	return true;
+}

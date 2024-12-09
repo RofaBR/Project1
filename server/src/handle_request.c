@@ -196,6 +196,10 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
             cJSON_AddBoolToObject(json, "status", false);
             cJSON_AddStringToObject(json, "data", "Why text yourself? That's called thoughts!");
             syslog(LOG_INFO, "Why text yourself? That's called thoughts!");
+        } else if (db_private_group_exists(user->id), client->id_db) {
+            cJSON_AddBoolToObject(json, "status", false);
+            cJSON_AddStringToObject(json, "data", "You and this user are already chatting.");
+            syslog(LOG_INFO, "You and this user are already chatting.");
         } else {
             t_group* group = group_create("", client->id_db, 1);
 

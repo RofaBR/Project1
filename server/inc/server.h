@@ -141,6 +141,7 @@ bool db_group_delete_by_named_field(const char* field, const char* value);
 bool db_group_update(t_group* group);
 t_group* db_group_read_by_id(int id);
 t_list* db_group_read_all(void);
+bool db_private_group_exists(int idA, int idB);
 
 //Users-Groups CRUD
 t_list* db_user_read_by_group_id(int id);

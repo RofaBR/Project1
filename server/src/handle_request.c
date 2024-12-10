@@ -284,3 +284,288 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
     cJSON_Delete(json);
 }
 
+/*
+void handle_message_edit_request(cJSON *json_payload, t_client *client) {
+    if (!json_payload) {
+        syslog(LOG_ERR, "Invalid JSON payload in handle_message_edit_request");
+        return;
+    }
+
+    cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json_payload, "message_id");
+    cJSON *text_item = cJSON_GetObjectItemCaseSensitive(json_payload, "text");
+
+    if (!cJSON_IsNumber(id_item) || !id_item->valueint ||
+        !cJSON_IsString(text_item) || !text_item->valuestring) {
+        syslog(LOG_ERR, "Missing or invalid fields in edit message request");
+        return;
+    }
+
+    int id = id_item->valueint;
+
+    size_t decoded_len;
+    unsigned char *decoded_text = base64_decode(text_item->valuestring, &decoded_len);
+
+    if (!decoded_text) {
+        syslog(LOG_ERR, "Failed to decode Base64 fields in edit message request");
+        free(decoded_text);
+        return;
+    }
+      
+    char text[SHA256_DIGEST_LENGTH * 2 + 1];
+
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(&text[i * 2], "%02x", decoded_text[i]);
+    }
+    text[SHA256_DIGEST_LENGTH * 2] = '\0';
+
+    free(decoded_text);
+
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "response_type", "edit_message");
+
+    t_message* message = db_message_read_by_id(id);
+
+    if (!message) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Message not found.");
+    } else {
+        mx_strdel(&message->text);
+        message->text = mx_strdup(text);
+
+        if (db_message_update(message)) {
+            t_list* users = db_user_read_by_group_id(message->group_id);
+
+            cJSON *json_msg = message_to_json(message);
+            if (!json_msg) {
+                cJSON_AddBoolToObject(json, "status", false);
+                cJSON_AddStringToObject(json, "data", "Server error.");
+            } else {
+                cJSON_AddBoolToObject(json, "status", true);
+                cJSON_AddItemToObject(json, "data", json_msg);
+                
+                // SEND TO ALL CLIENTS FROM THE LIST
+                if(users) free_user_list(users);
+                free_message(&message);
+
+                syslog(LOG_INFO, "Edit message request received. Decoded id: %d, Decoded text: %s", id, text);
+
+                return;
+            }
+             
+            if(users) free_user_list(users);
+
+        } else {
+            cJSON_AddBoolToObject(json, "status", false);
+            cJSON_AddStringToObject(json, "data", "Update failed.");
+        }
+        free_message(&message);
+    }
+
+    prepare_and_send_json(json, client);
+
+    syslog(LOG_INFO, "Edit message request received. Decoded id: %d, Decoded text: %s", id, text);
+}
+
+
+void handle_message_delete_request(cJSON *json_payload, t_client *client) {
+    if (!json_payload) {
+        syslog(LOG_ERR, "Invalid JSON payload in handle_message_delete_request");
+        return;
+    }
+
+    cJSON *id_item = cJSON_GetObjectItemCaseSensitive(json_payload, "message_id");
+
+    if (!cJSON_IsNumber(id_item) || !id_item->valueint) {
+        syslog(LOG_ERR, "Missing or invalid fields in delete message request");
+        return;
+    }
+
+    int id = id_item->valueint;
+
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "response_type", "delete_message");
+
+    t_message* message = db_message_read_by_id(id);
+
+    if (!message) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Message not found.");
+    } else {
+        if (db_message_delete_by_id(message->id)) {
+            t_list* users = db_user_read_by_group_id(message->group_id);
+
+            cJSON *json_data = cJSON_CreateObject();
+            cJSON_AddNumberToObject(json_data, "message_id", (const double)user->message->id);
+            cJSON_AddNumberToObject(json_data, "group_id", (const double)user->message->group_id);
+            
+            // SEND TO ALL CLIENTS FROM THE LIST
+             
+            if(users) free_user_list(users);
+            free_message(&message);
+
+            syslog(LOG_INFO, "Delete message request received. Decoded id: %d", id);
+
+            return;
+
+        } else {
+            cJSON_AddBoolToObject(json, "status", false);
+            cJSON_AddStringToObject(json, "data", "Delete failed.");
+        }
+        free_message(&message);
+    }
+
+    prepare_and_send_json(json, client);
+
+    syslog(LOG_INFO, "Delete message request received. Decoded id: %d", id);
+}
+
+void handle_message_send_request(cJSON *json_payload, t_client *client) {
+    if (!json_payload) {
+        syslog(LOG_ERR, "Invalid JSON payload in handle_message_send_request");
+        return;
+    }
+
+    cJSON *group_id_item = cJSON_GetObjectItemCaseSensitive(json_payload, "group_id");
+    cJSON *text_item = cJSON_GetObjectItemCaseSensitive(json_payload, "text");
+
+    if (!cJSON_IsNumber(group_id_item) || !group_id_item->valueint ||
+        !cJSON_IsString(text_item) || !text_item->valuestring) {
+        syslog(LOG_ERR, "Missing or invalid fields in send message request");
+        return;
+    }
+
+    int group_id = group_id_item->valueint;
+
+    size_t decoded_len;
+    unsigned char *decoded_text = base64_decode(text_item->valuestring, &decoded_len);
+
+    if (!decoded_text) {
+        syslog(LOG_ERR, "Failed to decode Base64 fields in send message request");
+        free(decoded_text);
+        return;
+    }
+      
+    char text[SHA256_DIGEST_LENGTH * 2 + 1];
+
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(&text[i * 2], "%02x", decoded_text[i]);
+    }
+    text[SHA256_DIGEST_LENGTH * 2] = '\0';
+
+    free(decoded_text);
+
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "response_type", "send_message");
+
+    t_message* message = message_create(client->id_db, text, group_id);
+    int msg =_id = db_message_create(message);
+    free(&message);
+
+    message = db_message_read_by_id(msg_id);
+
+    if (!message) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "Could not send the message.");
+    } else {
+            t_list* users = db_user_read_by_group_id(message->group_id);
+
+            cJSON *json_msg = message_to_json(message);
+            if (!json_msg) {
+                cJSON_AddBoolToObject(json, "status", false);
+                cJSON_AddStringToObject(json, "data", "Server error.");
+            } else {
+                cJSON_AddBoolToObject(json, "status", true);
+                cJSON_AddItemToObject(json, "data", json_msg);
+                
+                // SEND TO ALL CLIENTS FROM THE LIST
+                if(users) free_user_list(users);
+                free_message(&message);
+            }
+             
+            if(users) free_user_list(users);
+        }
+        free_message(&message);
+    }
+
+    prepare_and_send_json(json, client);
+
+    syslog(LOG_INFO, "Send message request received. Decoded group id: %d, Decoded text: %s", group_id, text);
+}
+
+void handle_get_groups_request(cJSON *json_payload, t_client *client) {
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "response_type", "get_groups");
+
+    t_list* groups = db_group_read_by_user_id(client->id_db);
+
+    if (!groups) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "No groups found.");
+    } else {
+        cJSON *array = cJSON_CreateArray();
+
+        t_list* current = groups;
+        while(current) {
+            t_group* g = (t_group*)current->data;
+            cJSON* json_group = group_to_json(g);
+            cJSON_AddItemToArray(array, json_group);
+
+            current = current->next;
+        }
+
+        free_group_list(groups);
+
+        cJSON_AddBoolToObject(json, "status", true);
+        cJSON_AddItemToObject(json, "groups", array);
+    }
+
+    prepare_and_send_json(json, client);
+
+    syslog(LOG_INFO, "Get groups request received.");
+}
+
+void handle_get_messages_request(cJSON *json_payload, t_client *client) {
+    if (!json_payload) {
+        syslog(LOG_ERR, "Invalid JSON payload in handle_get_messages_request");
+        return;
+    }
+
+    cJSON *group_id_item = cJSON_GetObjectItemCaseSensitive(json_payload, "group_id");
+    if (!cJSON_IsNumber(group_id_item) || !group_id_item->valueint) {
+        syslog(LOG_ERR, "Missing or invalid fields in get messages request");
+        return;
+    }
+
+    int group_id = group_id_item->valueint;
+
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "response_type", "get_messages");
+
+    t_list* messages = db_message_read_by_group_id(group_id);
+
+    if (!messages) {
+        cJSON_AddBoolToObject(json, "status", false);
+        cJSON_AddStringToObject(json, "data", "No messages found.");
+    } else {
+        cJSON *array = cJSON_CreateArray();
+
+        t_list* current = messages;
+        while(current) {
+            t_message* m = (t_message*)current->data;
+            cJSON* json_msg = message_to_json(m);
+            cJSON_AddItemToArray(array, json_msg);
+
+            current = current->next;
+        }
+
+        free_message_list(messages);
+
+        cJSON_AddBoolToObject(json, "status", true);
+        cJSON_AddItemToObject(json, "messages", array);
+    }
+
+    prepare_and_send_json(json, client);
+
+    syslog(LOG_INFO, "Get messages request received.");
+}
+*/

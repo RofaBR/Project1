@@ -15,8 +15,6 @@ int generate_aes_key_iv(t_main *main) {
         fprintf(stderr, "Failed to generate AES IV\n");
         return -1;
     }
-
-    //printf("AES key and IV generated successfully.\n");
     return 0;
 }
 
@@ -107,7 +105,6 @@ int mx_receiving_pubkey(t_main *main) {
     }
 
     BIO_free(bio);
-    //printf("Public key received and parsed successfully.\n");
     return 0;
 }
 

@@ -1,6 +1,5 @@
 #include "../inc/client.h"
 
-// Функция загрузки для конкретного окна
 void load_css(GtkWidget *window) {
     GtkCssProvider *provider;
     GdkDisplay *display;
@@ -23,8 +22,6 @@ void load_css(GtkWidget *window) {
     g_object_unref(provider);
 }
 
-
-//для всего экрана
 void load_css_for_screen(const char *css_file_path) {
     GtkCssProvider *css_provider;
     GFile *css_file;

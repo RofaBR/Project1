@@ -213,3 +213,16 @@ button:hover {
     border-color: #d39506;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
+
+#message-label{
+    color: #000000;
+    font-weight: bold;    
+    font-size: 18px;  
+}
+
+#time-label{
+    color: #000000;
+    font-weight: lighter;    
+    font-size: 11px; 
+    
+}

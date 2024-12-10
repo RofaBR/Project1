@@ -185,7 +185,7 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
     }
 
     cJSON_AddStringToObject(json, "response_type", "create_group");
-
+    syslog(LOG_INFO, "Create group request processed successfully. Decoded login: %s", login);
     t_user* user = db_user_read_by_login(login);
     if (!user) {
         cJSON_AddBoolToObject(json, "status", false);
@@ -282,6 +282,5 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
     free_group(&group);
     free_user(&user);
     cJSON_Delete(json);
-    syslog(LOG_INFO, "Create group request processed successfully. Decoded login: %s", login);
 }
 

@@ -127,9 +127,6 @@ void handle_login_response(cJSON *json_payload);
 void handle_register_response(cJSON *json_payload);
 void handle_create_chat_response(cJSON *json_payload);
 
-//test func
-void test_base64_encoding(t_main *main_data);
-
 void update_error_label(GtkWidget *error_label, const char *message);
 gboolean gtk_update_notification_label(gpointer user_data);
 gboolean gtk_destroy_login_window(gpointer data);

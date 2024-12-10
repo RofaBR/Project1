@@ -104,9 +104,6 @@ void on_login_button_clicked(GtkWidget *button, gpointer data) {
     }
 
     t_user* user = mx_create_log_user(login, password);
-
-    g_print("Login: %s\n", user->login);
-    g_print("Password: %s\n", user->password);
     
     cJSON *login_request = form_login_request(user->login, user->password);
 
@@ -155,10 +152,7 @@ void on_submit_account_button_clicked(GtkWidget *button, gpointer data) {
     t_user* user = mx_create_user(login, username, password);
 	
     g_print("Account created successfully:\n");
-    g_print("Username: %s\n", user->name);
-    g_print("Login: %s\n", user->login);
-    g_print("Password: %s\n", user->password);
-
+    
     cJSON *register_request = form_register_request(user->login, user->name, user->password);
 
     prepare_and_send_json(register_request, main_data);

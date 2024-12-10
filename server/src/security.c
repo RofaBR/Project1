@@ -37,22 +37,8 @@ int generate_rsa_keys(t_keys *keys) {
         return -1;
     }
 
-    //syslog(LOG_INFO, "RSA keys successfully generated and stored in t_keys");
     EVP_PKEY_CTX_free(ctx);
     return 0;
-}
-//test func
-static void log_aes_key_hash_to_syslog(const unsigned char *aes_key, size_t length) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256(aes_key, length, hash);
-
-    char hex_hash[SHA256_DIGEST_LENGTH * 2 + 1];
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
-        sprintf(hex_hash + i * 2, "%02x", hash[i]);
-    }
-    hex_hash[SHA256_DIGEST_LENGTH * 2] = '\0';
-
-    syslog(LOG_INFO, "Computed SHA-256 hash of AES key: %s", hex_hash);
 }
 
 int handshake(t_client *client) {
@@ -119,8 +105,6 @@ int handshake(t_client *client) {
     }
 
     memcpy(client->keys.aes_key, decrypted_key, AES_KEY_SIZE);
-    //use func for testing
-    //log_aes_key_hash_to_syslog(client->keys.aes_key, AES_KEY_SIZE);
     memcpy(client->keys.aes_iv, iv, AES_IV_SIZE);
     free(decrypted_key);
 
@@ -145,7 +129,6 @@ int rsa_keys_to_pem(EVP_PKEY *pkey, unsigned char **pubkey_pem, size_t *pubkey_l
         return -1;
     }
 
-    // Write public key to PEM
     if (!PEM_write_bio_PUBKEY(pub_mem, pkey)) {
         syslog(LOG_ERR, "Error: Failed to write public key to PEM");
         BIO_free(pub_mem);
@@ -153,7 +136,6 @@ int rsa_keys_to_pem(EVP_PKEY *pkey, unsigned char **pubkey_pem, size_t *pubkey_l
         return -1;
     }
 
-    // Write private key to PEM
     if (!PEM_write_bio_PrivateKey(priv_mem, pkey, NULL, NULL, 0, NULL, NULL)) {
         syslog(LOG_ERR, "Error: Failed to write private key to PEM");
         BIO_free(pub_mem);
@@ -161,7 +143,6 @@ int rsa_keys_to_pem(EVP_PKEY *pkey, unsigned char **pubkey_pem, size_t *pubkey_l
         return -1;
     }
 
-    // Extract public key PEM data
     char *pub_data;
     *pubkey_len = BIO_get_mem_data(pub_mem, &pub_data);
     *pubkey_pem = malloc(*pubkey_len);
@@ -173,7 +154,6 @@ int rsa_keys_to_pem(EVP_PKEY *pkey, unsigned char **pubkey_pem, size_t *pubkey_l
     }
     memcpy(*pubkey_pem, pub_data, *pubkey_len);
 
-    // Extract private key PEM data
     char *priv_data;
     *privkey_len = BIO_get_mem_data(priv_mem, &priv_data);
     *privkey_pem = malloc(*privkey_len);
@@ -289,7 +269,6 @@ int mx_receive_aes(t_client *client, unsigned char *encrypted_aes_key, size_t *e
     memcpy(iv, decoded_iv, AES_IV_SIZE);
     free(decoded_iv);
 
-    //syslog(LOG_INFO, "Successfully received encrypted AES key and IV from Client id: %ld", client->thread_id);
     cJSON_Delete(json_payload);
     return 0;
 }

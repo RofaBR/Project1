@@ -190,7 +190,6 @@ void handle_group_create_request(cJSON* json_payload, t_client* client) {
     if (!user) {
         cJSON_AddBoolToObject(json, "status", false);
         cJSON_AddStringToObject(json, "data", "User not found.");
-        syslog(LOG_INFO, "User not found.");
         prepare_and_send_json(json, client);
         return;
     }

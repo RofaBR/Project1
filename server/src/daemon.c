@@ -1,6 +1,7 @@
 #include "../inc/server.h"
 
 void mx_daemon_start(void) {
+    printf("Server daemon starting with PID: %d\n", getpid());
     if (daemon(0, 0) == -1) {
         perror("daemon failed");
         exit(EXIT_FAILURE);

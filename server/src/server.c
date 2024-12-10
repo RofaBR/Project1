@@ -37,6 +37,13 @@ int start_server(t_server *server, const char *port) {
         return -1;
     }
 
+    int opt = 1;
+    if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1) {
+        perror("setsockopt failed");
+        free_server(server);
+    return -1;
+    }
+
     if (bind(server->sd, server->ai->ai_addr, server->ai->ai_addrlen) == -1) {
         if (errno == EADDRINUSE) {
             syslog(LOG_ERR, "Port %s is already in use\n", port);
